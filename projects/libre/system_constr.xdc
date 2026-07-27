@@ -44,36 +44,58 @@ set_property -dict {PACKAGE_PIN T20 IOSTANDARD LVCMOS25} [get_ports {gpio_status
 set_property -dict {PACKAGE_PIN U13 IOSTANDARD LVCMOS25} [get_ports {gpio_status[6]}]
 set_property -dict {PACKAGE_PIN V13 IOSTANDARD LVCMOS25} [get_ports {gpio_status[7]}]
 
+# bank 34: 2.5V
 set_property -dict {PACKAGE_PIN T10 IOSTANDARD LVCMOS25} [get_ports {gpio_ctl[0]}]
-set_property -dict {PACKAGE_PIN Y11 IOSTANDARD LVCMOS33} [get_ports {gpio_ctl[1]}]
-set_property -dict {PACKAGE_PIN V10 IOSTANDARD LVCMOS33} [get_ports {gpio_ctl[2]}]
-set_property -dict {PACKAGE_PIN U9 IOSTANDARD LVCMOS33} [get_ports {gpio_ctl[3]}]
+# bank 13: 2.5V
+set_property -dict {PACKAGE_PIN Y11 IOSTANDARD LVCMOS25} [get_ports {gpio_ctl[1]}]
+set_property -dict {PACKAGE_PIN V10 IOSTANDARD LVCMOS25} [get_ports {gpio_ctl[2]}]
+set_property -dict {PACKAGE_PIN U9 IOSTANDARD LVCMOS25} [get_ports {gpio_ctl[3]}]
 
+# bank 34: 2.5V
 set_property -dict {PACKAGE_PIN P16 IOSTANDARD LVCMOS25} [get_ports gpio_en_agc]
 set_property -dict {PACKAGE_PIN N17 IOSTANDARD LVCMOS25} [get_ports gpio_resetb]
 
+# bank 34: 2.5V
 set_property -dict {PACKAGE_PIN P14 IOSTANDARD LVCMOS25} [get_ports txnrx]
 set_property -dict {PACKAGE_PIN R18 IOSTANDARD LVCMOS25} [get_ports enable]
 
+# bank 35: 3.3V
+# external 4k7 pullups exist. PULLTYPE PULLUP enables weak internal pullups,
+# which doesn't hurt.
 set_property  -dict {PACKAGE_PIN  M15  IOSTANDARD LVCMOS33 PULLTYPE PULLUP} [get_ports exp_iic_scl]
 set_property  -dict {PACKAGE_PIN  K16  IOSTANDARD LVCMOS33 PULLTYPE PULLUP} [get_ports exp_iic_sda]
 
+# bank 34: 2.5V
+# PULLTYPE PULLUP enables weak internal pullups (to prevent CSn from floating)
 set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS25 PULLTYPE PULLUP} [get_ports spi_csn]
 set_property -dict {PACKAGE_PIN R14 IOSTANDARD LVCMOS25} [get_ports spi_clk]
 set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS25} [get_ports spi_mosi]
 set_property -dict {PACKAGE_PIN R19 IOSTANDARD LVCMOS25} [get_ports spi_miso]
 
+# bank 35: 3.3V
 set_property  -dict {PACKAGE_PIN  J20  IOSTANDARD LVCMOS33} [get_ports pl_led[0]]
 set_property  -dict {PACKAGE_PIN  H20  IOSTANDARD LVCMOS33} [get_ports pl_led[1]]
 
+# bank 35: 3.3V
 set_property  -dict {PACKAGE_PIN  G15  IOSTANDARD LVCMOS33} [get_ports ext_gpio[0]]
 set_property  -dict {PACKAGE_PIN  K14  IOSTANDARD LVCMOS33} [get_ports ext_gpio[1]]
 set_property  -dict {PACKAGE_PIN  J14  IOSTANDARD LVCMOS33} [get_ports ext_gpio[2]]
 set_property  -dict {PACKAGE_PIN  N15  IOSTANDARD LVCMOS33} [get_ports ext_gpio[3]]
 
+# bank 35: 3.3V
+# PULLTYPE PULLUP enables weak internal pullups (to prevent CSn from floating)
 set_property  -dict {PACKAGE_PIN  H18  IOSTANDARD LVCMOS33 PULLTYPE PULLUP} [get_ports clk_dac_spi_csn]
-set_property  -dict {PACKAGE_PIN  F19  IOSTANDARD LVCMOS33 PULLTYPE PULLUP} [get_ports clk_dac_spi_clk]
-set_property  -dict {PACKAGE_PIN  F20  IOSTANDARD LVCMOS33 PULLTYPE PULLUP} [get_ports clk_dac_spi_mosi]
+set_property  -dict {PACKAGE_PIN  F19  IOSTANDARD LVCMOS33} [get_ports clk_dac_spi_clk]
+set_property  -dict {PACKAGE_PIN  F20  IOSTANDARD LVCMOS33} [get_ports clk_dac_spi_mosi]
+
+# bank 35: 3.3V
+set_property  -dict {PACKAGE_PIN  K17  IOSTANDARD LVCMOS33} [get_ports clkin_10mhz]
+set_property  -dict {PACKAGE_PIN  K18  IOSTANDARD LVCMOS33} [get_ports pps_in]
+set_property  -dict {PACKAGE_PIN  H16  IOSTANDARD LVCMOS33} [get_ports clk_40m_fpga]
+
+# TODO specify input jitter for these clocks
+create_clock -period 100.000 -name clkin_10mhz_clk [get_ports clkin_10mhz]
+create_clock -period 25.000 -name clk_40m_fpga_clk [get_ports clk_40m_fpga]
 
 create_clock -period 8.000 -name rx_clk [get_ports rx_clk_in_p]
 

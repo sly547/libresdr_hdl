@@ -97,6 +97,10 @@ module system_top (
   inout           clk_dac_spi_clk,
   inout           clk_dac_spi_mosi,
 
+  input           clkin_10mhz,
+  input           clk_40m_fpga,
+  input           pps_in,
+
   inout           exp_iic_scl,
   inout           exp_iic_sda
 
@@ -166,13 +170,9 @@ module system_top (
     .dio_p (clk_dac_spi_csn));
 
   system_wrapper i_system_wrapper (
-    //.CLKIN_10MHz (),
-    //.CLK_40M_FPGA (),
-    //.PPS_IN (),
-    //.clk_dac_spi_io0_io (clk_dac_spi_mosi),
-    //.clk_dac_spi_io1_io (),
-    //.clk_dac_spi_sck_io (clk_dac_spi_clk),
-    //.clk_dac_spi_ss_io (clk_dac_spi_csn),
+    .clkin_10mhz (clkin_10mhz),
+    .clk_40m_fpga (clk_40m_fpga),
+    .pps_in (pps_in),
     .ddr_addr (ddr_addr),
     .ddr_ba (ddr_ba),
     .ddr_cas_n (ddr_cas_n),
