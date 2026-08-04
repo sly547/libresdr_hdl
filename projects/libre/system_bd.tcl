@@ -20,6 +20,7 @@ open_bd_design "libre.srcs/sources_1/bd/${bd_design_name}/${bd_design_name}.bd"
 # create board design
 source $ad_hdl_dir/projects/common/xilinx/adi_fir_filter_bd.tcl
 source $ad_hdl_dir/library/axi_tdd/scripts/axi_tdd.tcl
+source bd_cell_hier_microblaze.tcl
 
 # default ports
 
@@ -445,6 +446,18 @@ ad_connect clk_40m_fpga xlconcat_0/In0
 ad_connect xlconcat_0/dout app_logic_0/board_clocks
 ad_connect sys_cpu_clk app_logic_0/clk
 ad_connect sys_cpu_resetn app_logic_0/rstn
+
+# microblaze
+
+create_hier_cell_hier_microblaze_0 [current_bd_instance .] hier_microblaze_0
+ad_ip_instance mdm_riscv mdm_1
+
+ad_connect sys_rstgen/bus_struct_reset hier_microblaze_0/SYS_Rst
+ad_connect sys_rstgen/mb_reset hier_microblaze_0/Reset
+ad_connect sys_cpu_resetn hier_microblaze_0/aresetn
+ad_connect sys_cpu_clk hier_microblaze_0/Clk
+ad_connect mdm_1/MBDEBUG_0 hier_microblaze_0/DEBUG
+ad_connect mdm_1/Debug_SYS_Rst sys_rstgen/mb_debug_sys_rst
 
 # interconnects
 
