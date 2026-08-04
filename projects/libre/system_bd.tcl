@@ -23,12 +23,6 @@ source $ad_hdl_dir/library/axi_tdd/scripts/axi_tdd.tcl
 create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 ddr
 create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 fixed_io
 
-if {[info exists e200]} {
-create_bd_intf_port -mode Master -vlnv xilinx.com:interface:mdio_rtl:1.0 MDIO_PHY
-create_bd_intf_port -mode Master -vlnv xilinx.com:interface:rgmii_rtl:1.0 RGMII
-create_bd_port -dir O eth_rst_n
-}
-
 create_bd_port -dir O spi0_csn_2_o
 create_bd_port -dir O spi0_csn_1_o
 create_bd_port -dir O spi0_csn_0_o
@@ -56,23 +50,10 @@ create_bd_port -dir O clk_dac_spi_io0_t
 create_bd_port -dir O txdata_o
 create_bd_port -dir I tdd_ext_sync
 
-if {[info exists e200]} {
-create_bd_port -dir I CLKIN_10MHz
-create_bd_port -dir I CLK_40MHz_FPGA
-create_bd_port -dir O CLK_40M_DAC_DIN
-create_bd_port -dir O CLK_40M_DAC_SCLK
-create_bd_port -dir O CLK_40M_DAC_nSYNC
-create_bd_port -dir I PPS_GPS
-create_bd_port -dir I PPS_IN
-create_bd_port -dir O PPS_LED
-create_bd_port -dir O PPS_LOCKED
-create_bd_port -dir O REF_10M_LOCKED
-}
-
 if {[info exists libre]} {
-  create_bd_port -dir I CLKIN_10MHz
-  create_bd_port -dir I CLK_40M_FPGA
-  create_bd_port -dir I PPS_IN
+    create_bd_port -dir I CLKIN_10MHz
+    create_bd_port -dir I CLK_40M_FPGA
+    create_bd_port -dir I PPS_IN
 }
 
 # instance: sys_ps7
@@ -80,34 +61,18 @@ if {[info exists libre]} {
 ad_ip_instance processing_system7 sys_ps7
 
 # ps7 settings
-if {[info exists e200]} {
-  ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK0_VOLTAGE {LVCMOS 3.3V}
-  ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK1_VOLTAGE {LVCMOS 3.3V}
-  ad_ip_parameter sys_ps7 CONFIG.PCW_PACKAGE_NAME clg400
-  ad_ip_parameter sys_ps7 CONFIG.PCW_GPIO_MIO_GPIO_ENABLE 1
-  ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_PERIPHERAL_ENABLE 1
-  ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_ENET0_IO "EMIO"
-  ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_GRP_MDIO_ENABLE 1
-  ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_GRP_MDIO_IO "EMIO"
-} else {
-	if {[info exists libre]} {
-		ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK0_VOLTAGE {LVCMOS 3.3V}
-		ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK1_VOLTAGE {LVCMOS 2.5V}
-		ad_ip_parameter sys_ps7 CONFIG.PCW_PACKAGE_NAME clg400
-		ad_ip_parameter sys_ps7 CONFIG.PCW_GPIO_MIO_GPIO_ENABLE 1
-		ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_PERIPHERAL_ENABLE 1
-		ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_ENET0_IO "MIO 16 .. 27"
-		ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_GRP_MDIO_ENABLE 1
-		ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_GRP_MDIO_IO "MIO 52 .. 53"
-		ad_ip_parameter sys_ps7 CONFIG.PCW_ENET_RESET_SELECT "Share reset pin"
-		ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_RESET_ENABLE 1
-		ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_RESET_IO "MIO 9"
-
-} else {		
-	ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK0_VOLTAGE {LVCMOS 1.8V}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK1_VOLTAGE {LVCMOS 1.8V}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_PACKAGE_NAME clg225
-}
+if {[info exists libre]} {
+    ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK0_VOLTAGE {LVCMOS 3.3V}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_PRESET_BANK1_VOLTAGE {LVCMOS 2.5V}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_PACKAGE_NAME clg400
+    ad_ip_parameter sys_ps7 CONFIG.PCW_GPIO_MIO_GPIO_ENABLE 1
+    ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_PERIPHERAL_ENABLE 1
+    ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_ENET0_IO "MIO 16 .. 27"
+    ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_GRP_MDIO_ENABLE 1
+    ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_GRP_MDIO_IO "MIO 52 .. 53"
+    ad_ip_parameter sys_ps7 CONFIG.PCW_ENET_RESET_SELECT "Share reset pin"
+    ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_RESET_ENABLE 1
+    ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_RESET_IO "MIO 9"
 }
 
 ad_ip_parameter sys_ps7 CONFIG.PCW_USE_S_AXI_HP1 1
@@ -119,24 +84,14 @@ ad_ip_parameter sys_ps7 CONFIG.PCW_FPGA1_PERIPHERAL_FREQMHZ 200.0
 ad_ip_parameter sys_ps7 CONFIG.PCW_GPIO_EMIO_GPIO_ENABLE 1
 ad_ip_parameter sys_ps7 CONFIG.PCW_GPIO_EMIO_GPIO_IO 20
 
-if {[info exists plutoplus]} {
-    # Pluto+ Ethernet (not available in ADALM Pluto)
-    ad_ip_parameter sys_ps7 CONFIG.PCW_EN_ENET0 1
-    ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_PERIPHERAL_ENABLE 1
-    ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_ENET0_IO {MIO 16 .. 27}
-    ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_GRP_MDIO_ENABLE 1
-    ad_ip_parameter sys_ps7 CONFIG.PCW_ENET0_GRP_MDIO_IO {MIO 52 .. 53}
-}
-
 ad_ip_parameter sys_ps7 CONFIG.PCW_SPI1_PERIPHERAL_ENABLE 0
 ad_ip_parameter sys_ps7 CONFIG.PCW_I2C0_PERIPHERAL_ENABLE 0
+
 if {[info exists libre]} {
-  # the LibreSDR has only one UART on MIO14..15
-  ad_ip_parameter sys_ps7 CONFIG.PCW_UART1_PERIPHERAL_ENABLE 0
-} else {
-  ad_ip_parameter sys_ps7 CONFIG.PCW_UART1_PERIPHERAL_ENABLE 1
-  ad_ip_parameter sys_ps7 CONFIG.PCW_UART1_UART1_IO {MIO 12 .. 13}
+    # the LibreSDR has only one UART on MIO14..15
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UART1_PERIPHERAL_ENABLE 0
 }
+
 ad_ip_parameter sys_ps7 CONFIG.PCW_I2C1_PERIPHERAL_ENABLE 0
 ad_ip_parameter sys_ps7 CONFIG.PCW_QSPI_PERIPHERAL_ENABLE 1
 ad_ip_parameter sys_ps7 CONFIG.PCW_QSPI_GRP_SINGLE_SS_ENABLE 1
@@ -144,34 +99,12 @@ ad_ip_parameter sys_ps7 CONFIG.PCW_SD0_PERIPHERAL_ENABLE 0
 ad_ip_parameter sys_ps7 CONFIG.PCW_SPI0_PERIPHERAL_ENABLE 1
 ad_ip_parameter sys_ps7 CONFIG.PCW_SPI0_SPI0_IO EMIO
 
-if {[info exists plutoplus]} {
-    # Pluto+ SD card (not available in ADALM Pluto)
-    ad_ip_parameter sys_ps7 CONFIG.PCW_SD0_PERIPHERAL_ENABLE 1
-    ad_ip_parameter sys_ps7 CONFIG.PCW_SD0_SD0_IO "MIO 40 .. 45"
-    ad_ip_parameter sys_ps7 CONFIG.PCW_SD0_GRP_CD_ENABLE 1
-    ad_ip_parameter sys_ps7 CONFIG.PCW_SD0_GRP_CD_IO "MIO 47"
-    ad_ip_parameter sys_ps7 CONFIG.PCW_MIO_47_PULLUP {enabled}
-    ad_ip_parameter sys_ps7 CONFIG.PCW_MIO_47_SLEW {slow}
-    ad_ip_parameter sys_ps7 CONFIG.PCW_SD0_GRP_POW_ENABLE    0
-    ad_ip_parameter sys_ps7 CONFIG.PCW_SD0_GRP_WP_ENABLE     0
-} else {
-	if {[info exists e200]} {
-    ad_ip_parameter sys_ps7 CONFIG.PCW_I2C0_PERIPHERAL_ENABLE 1
-    ad_ip_parameter sys_ps7 CONFIG.PCW_I2C0_I2C0_IO {MIO 10 .. 11}
-
+if {[info exists libre]} {
+    ad_ip_parameter sys_ps7 CONFIG.PCW_CRYSTAL_PERIPHERAL_FREQMHZ 50
     ad_ip_parameter sys_ps7 CONFIG.PCW_SD0_PERIPHERAL_ENABLE 1
     ad_ip_parameter sys_ps7 CONFIG.PCW_SDIO_PERIPHERAL_FREQMHZ 50
     ad_ip_parameter sys_ps7 CONFIG.PCW_UART0_PERIPHERAL_ENABLE 1
     ad_ip_parameter sys_ps7 CONFIG.PCW_UART0_UART0_IO {MIO 14 .. 15}
-  } else {
-    if {[info exists libre]} {
-      ad_ip_parameter sys_ps7 CONFIG.PCW_CRYSTAL_PERIPHERAL_FREQMHZ 50
-      ad_ip_parameter sys_ps7 CONFIG.PCW_SD0_PERIPHERAL_ENABLE 1
-      ad_ip_parameter sys_ps7 CONFIG.PCW_SDIO_PERIPHERAL_FREQMHZ 50
-      ad_ip_parameter sys_ps7 CONFIG.PCW_UART0_PERIPHERAL_ENABLE 1
-      ad_ip_parameter sys_ps7 CONFIG.PCW_UART0_UART0_IO {MIO 14 .. 15}
-    }
-	}
 }
 
 ad_ip_parameter sys_ps7 CONFIG.PCW_TTC0_PERIPHERAL_ENABLE 0
@@ -180,21 +113,8 @@ ad_ip_parameter sys_ps7 CONFIG.PCW_USB0_PERIPHERAL_ENABLE 1
 ad_ip_parameter sys_ps7 CONFIG.PCW_GPIO_MIO_GPIO_ENABLE 1
 ad_ip_parameter sys_ps7 CONFIG.PCW_GPIO_MIO_GPIO_IO MIO
 
-if {[info exists plutoplus]} {
-    # Different USB reset MIO for Pluto+
-    ad_ip_parameter sys_ps7 CONFIG.PCW_USB0_RESET_IO {MIO 46}
-    ad_ip_parameter sys_ps7 CONFIG.PCW_MIO_46_SLEW {slow}
-    ad_ip_parameter sys_ps7 CONFIG.PCW_MIO_46_PULLUP {enabled}
-} else {
-	if {[info exists e200]} {
-    ad_ip_parameter sys_ps7 CONFIG.PCW_USB0_RESET_IO {MIO 47}
-	} else {
-    if {[info exists libre]} {	
-      ad_ip_parameter sys_ps7 CONFIG.PCW_USB0_RESET_IO {MIO 47}	
-    } else {	
-	    ad_ip_parameter sys_ps7 CONFIG.PCW_USB0_RESET_IO {MIO 52}
-    }
-	}
+if {[info exists libre]} {	
+    ad_ip_parameter sys_ps7 CONFIG.PCW_USB0_RESET_IO {MIO 47}	
 }
 ad_ip_parameter sys_ps7 CONFIG.PCW_USB0_RESET_ENABLE 1
 ad_ip_parameter sys_ps7 CONFIG.PCW_IRQ_F2P_INTR 1
@@ -210,44 +130,32 @@ ad_ip_parameter sys_ps7 CONFIG.PCW_MIO_53_PULLUP {enabled}
 # DDR MT41K256M16 HA-125 (32M, 16bit, 8banks)
 
 if {[info exists libre]} {
-	ad_ip_parameter sys_ps7 CONFIG.PCW_APU_PERIPHERAL_FREQMHZ 750	
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_PARTNO {Custom}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_BANK_ADDR_COUNT {3}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_ROW_ADDR_COUNT {15}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_COL_ADDR_COUNT {10}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_CL {9}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_CWL {7}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_T_RCD {9}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_T_RP {9}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_T_RC {48.91}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_T_RAS_MIN {35.0}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_T_FAW {40.0}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_DQS_TO_CLK_DELAY_0 {0.048}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_DQS_TO_CLK_DELAY_1 {0.050}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_BOARD_DELAY0 {0.241}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_BOARD_DELAY1 {0.240}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_ECC {Disabled}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_BUS_WIDTH {32 Bit}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_DRAM_WIDTH {16 Bits}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_DEVICE_CAPACITY {4096 MBits}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_SPEED_BIN {DDR3_1066F}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_TRAIN_WRITE_LEVEL {1}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_TRAIN_READ_GATE {1}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_TRAIN_DATA_EYE {1}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_USE_INTERNAL_VREF {0}
-} else {
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_PARTNO {MT41K256M16 RE-125}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_BUS_WIDTH {16 Bit}
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_USE_INTERNAL_VREF 0
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_TRAIN_WRITE_LEVEL 1
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_TRAIN_READ_GATE 1
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_TRAIN_DATA_EYE 1
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_DQS_TO_CLK_DELAY_0 0.048
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_DQS_TO_CLK_DELAY_1 0.050
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_BOARD_DELAY0 0.241
-	ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_BOARD_DELAY1 0.240
+    ad_ip_parameter sys_ps7 CONFIG.PCW_APU_PERIPHERAL_FREQMHZ 750	
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_PARTNO {Custom}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_BANK_ADDR_COUNT {3}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_ROW_ADDR_COUNT {15}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_COL_ADDR_COUNT {10}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_CL {9}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_CWL {7}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_T_RCD {9}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_T_RP {9}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_T_RC {48.91}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_T_RAS_MIN {35.0}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_T_FAW {40.0}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_DQS_TO_CLK_DELAY_0 {0.048}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_DQS_TO_CLK_DELAY_1 {0.050}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_BOARD_DELAY0 {0.241}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_BOARD_DELAY1 {0.240}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_ECC {Disabled}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_BUS_WIDTH {32 Bit}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_DRAM_WIDTH {16 Bits}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_DEVICE_CAPACITY {4096 MBits}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_SPEED_BIN {DDR3_1066F}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_TRAIN_WRITE_LEVEL {1}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_TRAIN_READ_GATE {1}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_TRAIN_DATA_EYE {1}
+    ad_ip_parameter sys_ps7 CONFIG.PCW_UIPARAM_DDR_USE_INTERNAL_VREF {0}
 }
-
 
 ad_ip_instance xlconcat sys_concat_intc
 ad_ip_parameter sys_concat_intc CONFIG.NUM_PORTS 16
@@ -273,32 +181,6 @@ ad_connect  sys_cpu_resetn sys_rstgen/peripheral_aresetn
 ad_connect  sys_cpu_clk sys_rstgen/slowest_sync_clk
 ad_connect  sys_rstgen/ext_reset_in sys_ps7/FCLK_RESET0_N
 
-if {[info exists e200]} {
-	# add external ethernet phy
-	ad_ip_instance gmii_to_rgmii sys_rgmii
-	ad_ip_parameter sys_rgmii CONFIG.SupportLevel Include_Shared_Logic_in_Core
-
-	set axi_vcxo_ctrl [ create_bd_cell -type ip -vlnv user.org:user:axi_vcxo_ctrl:1.0 axi_vcxo_ctrl ]
-	ad_connect axi_vcxo_ctrl/CLK_40M_DAC_DIN CLK_40M_DAC_DIN
-	ad_connect axi_vcxo_ctrl/CLK_40M_DAC_SCLK CLK_40M_DAC_SCLK
-	ad_connect axi_vcxo_ctrl/CLK_40M_DAC_nSYNC CLK_40M_DAC_nSYNC
-	ad_connect axi_vcxo_ctrl/CLKIN_10MHz CLKIN_10MHz
-	ad_connect axi_vcxo_ctrl/CLK_40MHz_FPGA CLK_40MHz_FPGA
-	ad_connect axi_vcxo_ctrl/PPS_GPS PPS_GPS
-	ad_connect axi_vcxo_ctrl/PPS_IN PPS_IN
-	ad_connect axi_vcxo_ctrl/PPS_LED PPS_LED
-	ad_connect axi_vcxo_ctrl/PPS_LOCKED PPS_LOCKED
-	ad_connect axi_vcxo_ctrl/REF_10M_LOCKED REF_10M_LOCKED
-
-	ad_connect  eth_rst_n sys_rstgen/peripheral_aresetn
-	ad_connect  sys_rgmii/tx_reset sys_rstgen/peripheral_reset
-	ad_connect  sys_rgmii/rx_reset sys_rstgen/peripheral_reset
-	ad_connect  sys_rgmii/clkin sys_ps7/FCLK_CLK1 
-	ad_connect  sys_ps7/MDIO_ETHERNET_0 sys_rgmii/MDIO_GEM
-	ad_connect  sys_ps7/GMII_ETHERNET_0 sys_rgmii/GMII
-	ad_connect  sys_rgmii/MDIO_PHY MDIO_PHY
-	ad_connect  sys_rgmii/RGMII RGMII
-}
 # interface connections
 
 ad_connect  ddr sys_ps7/DDR
@@ -364,28 +246,19 @@ ad_cpu_interrupt ps-15 mb-15 axi_iic_exp/iic2intc_irpt
 
 # ad9361
 if {[info exists libre]} {
-create_bd_port -dir I rx_clk_in_p
-create_bd_port -dir I rx_clk_in_n
-create_bd_port -dir I rx_frame_in_p
-create_bd_port -dir I rx_frame_in_n
-create_bd_port -dir I -from 5 -to 0 rx_data_in_p
-create_bd_port -dir I -from 5 -to 0 rx_data_in_n
+    create_bd_port -dir I rx_clk_in_p
+    create_bd_port -dir I rx_clk_in_n
+    create_bd_port -dir I rx_frame_in_p
+    create_bd_port -dir I rx_frame_in_n
+    create_bd_port -dir I -from 5 -to 0 rx_data_in_p
+    create_bd_port -dir I -from 5 -to 0 rx_data_in_n
 
-create_bd_port -dir O tx_clk_out_p
-create_bd_port -dir O tx_clk_out_n
-create_bd_port -dir O tx_frame_out_p
-create_bd_port -dir O tx_frame_out_n
-create_bd_port -dir O -from 5 -to 0 tx_data_out_p
-create_bd_port -dir O -from 5 -to 0 tx_data_out_n
-
-} else {
-create_bd_port -dir I rx_clk_in
-create_bd_port -dir I rx_frame_in
-create_bd_port -dir I -from 11 -to 0 rx_data_in
-
-create_bd_port -dir O tx_clk_out
-create_bd_port -dir O tx_frame_out
-create_bd_port -dir O -from 11 -to 0 tx_data_out
+    create_bd_port -dir O tx_clk_out_p
+    create_bd_port -dir O tx_clk_out_n
+    create_bd_port -dir O tx_frame_out_p
+    create_bd_port -dir O tx_frame_out_n
+    create_bd_port -dir O -from 5 -to 0 tx_data_out_p
+    create_bd_port -dir O -from 5 -to 0 tx_data_out_n
 }
 create_bd_port -dir O enable
 create_bd_port -dir O txnrx
@@ -397,13 +270,9 @@ create_bd_port -dir I up_txnrx
 ad_ip_instance axi_ad9361 axi_ad9361
 ad_ip_parameter axi_ad9361 CONFIG.ID 0
 if {[info exists libre]} {
-ad_ip_parameter axi_ad9361 CONFIG.CMOS_OR_LVDS_N 0
-ad_ip_parameter axi_ad9361 CONFIG.MODE_1R1T 0
-ad_ip_parameter axi_ad9361 CONFIG.ADC_INIT_DELAY 30
-} else {
-ad_ip_parameter axi_ad9361 CONFIG.CMOS_OR_LVDS_N 1
-ad_ip_parameter axi_ad9361 CONFIG.MODE_1R1T 1
-ad_ip_parameter axi_ad9361 CONFIG.ADC_INIT_DELAY 21
+    ad_ip_parameter axi_ad9361 CONFIG.CMOS_OR_LVDS_N 0
+    ad_ip_parameter axi_ad9361 CONFIG.MODE_1R1T 0
+    ad_ip_parameter axi_ad9361 CONFIG.ADC_INIT_DELAY 30
 }
 # parameters to reduce size
 #ad_ip_parameter axi_ad9361 CONFIG.TDD_DISABLE 1
@@ -441,25 +310,18 @@ ad_ip_instance util_cpack2 cpack
 
 # connections
 if {[info exists libre]} {
-ad_connect  rx_clk_in_p axi_ad9361/rx_clk_in_p
-ad_connect  rx_clk_in_n axi_ad9361/rx_clk_in_n
-ad_connect  rx_frame_in_p axi_ad9361/rx_frame_in_p
-ad_connect  rx_frame_in_n axi_ad9361/rx_frame_in_n
-ad_connect  rx_data_in_p axi_ad9361/rx_data_in_p
-ad_connect  rx_data_in_n axi_ad9361/rx_data_in_n
-ad_connect  tx_clk_out_p axi_ad9361/tx_clk_out_p
-ad_connect  tx_clk_out_n axi_ad9361/tx_clk_out_n
-ad_connect  tx_frame_out_p axi_ad9361/tx_frame_out_p
-ad_connect  tx_frame_out_n axi_ad9361/tx_frame_out_n
-ad_connect  tx_data_out_p axi_ad9361/tx_data_out_p
-ad_connect  tx_data_out_n axi_ad9361/tx_data_out_n
-} else {
-ad_connect  rx_clk_in axi_ad9361/rx_clk_in
-ad_connect  rx_frame_in axi_ad9361/rx_frame_in
-ad_connect  rx_data_in axi_ad9361/rx_data_in
-ad_connect  tx_clk_out axi_ad9361/tx_clk_out
-ad_connect  tx_frame_out axi_ad9361/tx_frame_out
-ad_connect  tx_data_out axi_ad9361/tx_data_out
+    ad_connect  rx_clk_in_p axi_ad9361/rx_clk_in_p
+    ad_connect  rx_clk_in_n axi_ad9361/rx_clk_in_n
+    ad_connect  rx_frame_in_p axi_ad9361/rx_frame_in_p
+    ad_connect  rx_frame_in_n axi_ad9361/rx_frame_in_n
+    ad_connect  rx_data_in_p axi_ad9361/rx_data_in_p
+    ad_connect  rx_data_in_n axi_ad9361/rx_data_in_n
+    ad_connect  tx_clk_out_p axi_ad9361/tx_clk_out_p
+    ad_connect  tx_clk_out_n axi_ad9361/tx_clk_out_n
+    ad_connect  tx_frame_out_p axi_ad9361/tx_frame_out_p
+    ad_connect  tx_frame_out_n axi_ad9361/tx_frame_out_n
+    ad_connect  tx_data_out_p axi_ad9361/tx_data_out_p
+    ad_connect  tx_data_out_n axi_ad9361/tx_data_out_n
 }
 ad_connect  enable axi_ad9361/enable
 ad_connect  txnrx axi_ad9361/txnrx
