@@ -97,7 +97,8 @@ set_property  -dict {PACKAGE_PIN  H16  IOSTANDARD LVCMOS33} [get_ports clk_40m_f
 create_clock -period 100.000 -name clkin_10mhz_clk [get_ports clkin_10mhz]
 create_clock -period 25.000 -name clk_40m_fpga_clk [get_ports clk_40m_fpga]
 
-create_clock -period 8.000 -name rx_clk [get_ports rx_clk_in_p]
+# At 61.44 MSps and 2R2T, the AD9361 has to generate a clock of 245.76 MHz
+create_clock -period 4.000 -name rx_clk [get_ports rx_clk_in_p]
 
 # probably gone in 2016.4
 
