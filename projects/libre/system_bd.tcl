@@ -6,13 +6,16 @@
 # set LibreSDR-specific things
 set libre "libre"
 
-# TODO do I need this?
-# Add IP repo path for Maia SDR
-#
-# We need to do this here because adi_project_create overwrites whatever we had
-# set beforehand.
-#set_property ip_repo_paths {../../antsdr-hdl ../../ip ../../adi-hdl/library} [current_fileset]
-#update_ip_catalog
+# Calling 'update_ip_catalog' fails when the BD is already opened,
+# which seems to happen implicitly with 'create_bd_design'.
+set bd_design_obj [current_bd_design]
+set bd_design_name [get_property NAME $bd_design_obj]
+close_bd_design $bd_design_name
+set lib_dirs [get_property ip_repo_paths [current_fileset]]
+lappend lib_dirs ../../ip_repo
+set_property ip_repo_paths $lib_dirs [current_fileset]
+update_ip_catalog
+open_bd_design "libre.srcs/sources_1/bd/${bd_design_name}/${bd_design_name}.bd"
 
 # create board design
 source $ad_hdl_dir/projects/common/xilinx/adi_fir_filter_bd.tcl
@@ -51,9 +54,9 @@ create_bd_port -dir O txdata_o
 create_bd_port -dir I tdd_ext_sync
 
 if {[info exists libre]} {
-    create_bd_port -dir I CLKIN_10MHz
-    create_bd_port -dir I CLK_40M_FPGA
-    create_bd_port -dir I PPS_IN
+    create_bd_port -dir I clkin_10mhz
+    create_bd_port -dir I clk_40m_fpga
+    create_bd_port -dir I pps_in
 }
 
 # instance: sys_ps7
@@ -429,6 +432,20 @@ ad_connect axi_tdd_0/tdd_channel_0 txdata_o
 ad_connect axi_tdd_0/tdd_channel_1 axi_ad9361_adc_dma/sync
 ad_connect axi_tdd_0/tdd_channel_2 axi_ad9361_dac_dma/sync
 
+# app_logic
+
+ad_ip_instance app_logic app_logic_0
+ad_ip_instance xlconcat xlconcat_0
+ad_ip_parameter xlconcat_0 CONFIG.NUM_PORTS 4
+
+ad_connect app_logic_0/video_clk xlconcat_0/In3
+ad_connect axi_ad9361/l_clk xlconcat_0/In2
+ad_connect clkin_10mhz xlconcat_0/In1
+ad_connect clk_40m_fpga xlconcat_0/In0
+ad_connect xlconcat_0/dout app_logic_0/board_clocks
+ad_connect sys_cpu_clk app_logic_0/clk
+ad_connect sys_cpu_resetn app_logic_0/rstn
+
 # interconnects
 
 ad_cpu_interconnect 0x79020000 axi_ad9361
@@ -436,6 +453,7 @@ ad_cpu_interconnect 0x7C400000 axi_ad9361_adc_dma
 ad_cpu_interconnect 0x7C420000 axi_ad9361_dac_dma
 ad_cpu_interconnect 0x7C430000 axi_spi
 ad_cpu_interconnect 0x7C440000 axi_tdd_0
+ad_cpu_interconnect 0x7C450000 app_logic_0
 
 ad_ip_parameter sys_ps7 CONFIG.PCW_USE_S_AXI_HP1 {1}
 ad_connect sys_cpu_clk sys_ps7/S_AXI_HP1_ACLK

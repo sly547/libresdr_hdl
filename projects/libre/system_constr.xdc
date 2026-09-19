@@ -232,3 +232,21 @@ set_property PACKAGE_PIN W5 [get_ports {ddr_dqs_p[3]}]
 set_false_path -from [get_pins {i_system_wrapper/system_i/axi_ad9361/inst/i_rx/i_up_adc_common/up_adc_gpio_out_int_reg[0]/C}]
 set_false_path -from [get_pins {i_system_wrapper/system_i/axi_ad9361/inst/i_tx/i_up_dac_common/up_dac_gpio_out_int_reg[0]/C}]
 
+set_false_path \
+    -from [get_pins -filter {REF_PIN_NAME==C} -of_objects \
+        [get_cells -hier -filter {NAME =~ */i_clock_freq/gen_clk_counters[*].counter_reg*}]] \
+    -to [get_pins -filter {REF_PIN_NAME==D} -of_objects \
+        [get_cells -hier -filter {NAME =~ */i_clock_freq/clock_freq_reg[*][*]}]]
+
+set_false_path \
+    -from [get_pins -filter {REF_PIN_NAME==C} -of_objects \
+        [get_cells -hier -filter {NAME =~ */i_clock_freq/data_rdy_reg}]] \
+    -to [get_pins -filter {REF_PIN_NAME==D} -of_objects \
+        [get_cells -hier -filter {NAME =~ */i_clock_freq/gen_clk_counters[*].l_data_rdy_q_reg[*]}]]
+
+set_false_path \
+    -from [get_pins -filter {REF_PIN_NAME==C} -of \
+        [get_cells -hier -filter {NAME =~ */i_clock_freq/reset_reg}]] \
+    -to [get_pins -filter {REF_PIN_NAME==CLR} -of_objects \
+        [get_cells -hier -filter {NAME =~ */i_clock_freq/gen_clk_counters[*].*}]]
+
