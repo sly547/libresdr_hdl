@@ -20,6 +20,8 @@ open_bd_design "libre.srcs/sources_1/bd/${bd_design_name}/${bd_design_name}.bd"
 # create board design
 source $ad_hdl_dir/projects/common/xilinx/adi_fir_filter_bd.tcl
 source $ad_hdl_dir/library/axi_tdd/scripts/axi_tdd.tcl
+source bd_cell_hier_microblaze.tcl
+source bd_cell_hier_video.tcl
 
 
 # Start of Vivado-generated code (with some customizations where ADI's code is called).
@@ -409,7 +411,7 @@ source $ad_hdl_dir/library/axi_tdd/scripts/axi_tdd.tcl
 
   # Create instance: axi_gp0_interconnect, and set properties
   set axi_gp0_interconnect [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.* axi_gp0_interconnect ]
-  set_property CONFIG.NUM_MI {6} $axi_gp0_interconnect
+  set_property CONFIG.NUM_MI {8} $axi_gp0_interconnect
 
 
   # Create instance: axi_ad9361, and set properties
@@ -506,6 +508,25 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   ] $logic_inv
 
 
+  # Create instance: xlconcat_0, and set properties
+  set xlconcat_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.* xlconcat_0 ]
+  set_property CONFIG.NUM_PORTS {4} $xlconcat_0
+
+
+  # Create instance: hier_microblaze_0
+  create_hier_cell_hier_microblaze_0 [current_bd_instance .] hier_microblaze_0
+
+  # Create instance: mdm_1, and set properties
+  set mdm_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:mdm_riscv:1.* mdm_1 ]
+
+  # Create instance: hier_video
+  create_hier_cell_hier_video [current_bd_instance .] hier_video
+
+  # Create instance: app_logic_0, and set properties
+  set app_logic_0 [ create_bd_cell -type ip -vlnv user.org:user:app_logic:1.* app_logic_0 ]
+  set_property CONFIG.N_CLOCKS {4} $app_logic_0
+
+
   # Create instance: sys_concat_intc, and set properties
   set sys_concat_intc [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconcat:1.* sys_concat_intc ]
   set_property CONFIG.NUM_PORTS {16} $sys_concat_intc
@@ -522,8 +543,12 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   connect_bd_intf_net -intf_net axi_gp0_interconnect_M03_AXI [get_bd_intf_pins axi_gp0_interconnect/M03_AXI] [get_bd_intf_pins axi_ad9361_dac_dma/s_axi]
   connect_bd_intf_net -intf_net axi_gp0_interconnect_M04_AXI [get_bd_intf_pins axi_gp0_interconnect/M04_AXI] [get_bd_intf_pins axi_spi/AXI_LITE]
   connect_bd_intf_net -intf_net axi_gp0_interconnect_M05_AXI [get_bd_intf_pins axi_gp0_interconnect/M05_AXI] [get_bd_intf_pins axi_tdd_0/s_axi]
+  connect_bd_intf_net -intf_net axi_gp0_interconnect_M06_AXI [get_bd_intf_pins app_logic_0/s_axil] [get_bd_intf_pins axi_gp0_interconnect/M06_AXI]
+  connect_bd_intf_net -intf_net axi_gp0_interconnect_M07_AXI [get_bd_intf_pins axi_gp0_interconnect/M07_AXI] [get_bd_intf_pins hier_video/S00_AXI]
   connect_bd_intf_net -intf_net axi_iic_exp_IIC [get_bd_intf_ports exp_iic] [get_bd_intf_pins axi_iic_exp/IIC]
   connect_bd_intf_net -intf_net cpack_packed_fifo_wr [get_bd_intf_pins axi_ad9361_adc_dma/fifo_wr] [get_bd_intf_pins cpack/packed_fifo_wr]
+  connect_bd_intf_net -intf_net hier_video_M_AXI [get_bd_intf_pins sys_ps7/S_AXI_HP3] [get_bd_intf_pins hier_video/M_AXI]
+  connect_bd_intf_net -intf_net mdm_1_MBDEBUG_0 [get_bd_intf_pins mdm_1/MBDEBUG_0] [get_bd_intf_pins hier_microblaze_0/DEBUG]
   connect_bd_intf_net -intf_net sys_ps7_DDR [get_bd_intf_ports ddr] [get_bd_intf_pins sys_ps7/DDR]
   connect_bd_intf_net -intf_net sys_ps7_FIXED_IO [get_bd_intf_ports fixed_io] [get_bd_intf_pins sys_ps7/FIXED_IO]
 
@@ -540,15 +565,17 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   [get_bd_pins sys_concat_intc/In9] \
   [get_bd_pins sys_concat_intc/In8] \
   [get_bd_pins sys_concat_intc/In15] \
-  [get_bd_pins sys_concat_intc/In6] \
-  [get_bd_pins sys_concat_intc/In4] \
-  [get_bd_pins sys_concat_intc/In5]
-
+  [get_bd_pins sys_concat_intc/In6]
   # connections to GND_x and VCC_x have already have been made by ad_connect calls
   connect_bd_net -net active_1  [get_bd_pins decim_slice/Dout] \
   [get_bd_pins rx_fir_decimator/active]
   connect_bd_net -net active_2  [get_bd_pins interp_slice/Dout] \
   [get_bd_pins tx_fir_interpolator/active]
+  connect_bd_net -net app_logic_0_video_clk  [get_bd_pins app_logic_0/video_clk] \
+  [get_bd_pins hier_video/video_clk] \
+  [get_bd_pins xlconcat_0/In3]
+  connect_bd_net -net app_logic_0_video_rst  [get_bd_pins app_logic_0/video_rstn] \
+  [get_bd_pins hier_video/ext_reset_in]
   connect_bd_net -net axi_ad9361_adc_data_i0  [get_bd_pins axi_ad9361/adc_data_i0] \
   [get_bd_pins rx_fir_decimator/data_in_0]
   connect_bd_net -net axi_ad9361_adc_data_i1  [get_bd_pins axi_ad9361/adc_data_i1] \
@@ -597,7 +624,8 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   [get_bd_pins tx_upack/clk] \
   [get_bd_pins axi_ad9361_adc_dma/fifo_wr_clk] \
   [get_bd_pins axi_ad9361_dac_dma/m_axis_aclk] \
-  [get_bd_pins axi_tdd_0/clk]
+  [get_bd_pins axi_tdd_0/clk] \
+  [get_bd_pins xlconcat_0/In2]
   connect_bd_net -net axi_ad9361_rst  [get_bd_pins axi_ad9361/rst] \
   [get_bd_pins cpack/reset] \
   [get_bd_pins tx_upack/reset] \
@@ -642,20 +670,30 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   [get_bd_pins axi_ad9361_adc_dma/sync]
   connect_bd_net -net axi_tdd_0_tdd_channel_2  [get_bd_pins axi_tdd_0/tdd_channel_2] \
   [get_bd_pins axi_ad9361_dac_dma/sync]
+  connect_bd_net -net clk_40m_fpga_1  [get_bd_ports clk_40m_fpga] \
+  [get_bd_pins xlconcat_0/In0]
   connect_bd_net -net clk_dac_spi_io0_i_1  [get_bd_ports clk_dac_spi_io0_i] \
   [get_bd_pins axi_spi/io0_i]
   connect_bd_net -net clk_dac_spi_sck_i_1  [get_bd_ports clk_dac_spi_sck_i] \
   [get_bd_pins axi_spi/sck_i]
   connect_bd_net -net clk_dac_spi_ss_i_1  [get_bd_ports clk_dac_spi_ss_i] \
   [get_bd_pins axi_spi/ss_i]
+  connect_bd_net -net clkin_10mhz_1  [get_bd_ports clkin_10mhz] \
+  [get_bd_pins xlconcat_0/In1]
   connect_bd_net -net cpack_fifo_wr_overflow  [get_bd_pins cpack/fifo_wr_overflow] \
   [get_bd_pins axi_ad9361/adc_dovf]
   connect_bd_net -net gpio_i_1  [get_bd_ports gpio_i] \
   [get_bd_pins sys_ps7/GPIO_I]
+  connect_bd_net -net hier_video_interrupt  [get_bd_pins hier_video/dma_irq] \
+  [get_bd_pins sys_concat_intc/In5]
+  connect_bd_net -net hier_video_irq  [get_bd_pins hier_video/vtc_irq] \
+  [get_bd_pins sys_concat_intc/In4]
   connect_bd_net -net logic_inv_Res  [get_bd_pins logic_inv/Res] \
   [get_bd_pins axi_tdd_0/resetn]
   connect_bd_net -net logic_or_Res  [get_bd_pins logic_or/Res] \
   [get_bd_pins tx_upack/fifo_rd_en]
+  connect_bd_net -net mdm_1_Debug_SYS_Rst  [get_bd_pins mdm_1/Debug_SYS_Rst] \
+  [get_bd_pins sys_rstgen/mb_debug_sys_rst]
   connect_bd_net -net rx_clk_in_n_1  [get_bd_ports rx_clk_in_n] \
   [get_bd_pins axi_ad9361/rx_clk_in_n]
   connect_bd_net -net rx_clk_in_p_1  [get_bd_ports rx_clk_in_p] \
@@ -700,6 +738,7 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   [get_bd_pins sys_ps7/M_AXI_GP0_ACLK] \
   [get_bd_pins axi_gp0_interconnect/M00_ACLK] \
   [get_bd_pins axi_iic_exp/s_axi_aclk] \
+  [get_bd_pins hier_microblaze_0/Clk] \
   [get_bd_pins axi_gp0_interconnect/M01_ACLK] \
   [get_bd_pins axi_ad9361/s_axi_aclk] \
   [get_bd_pins axi_gp0_interconnect/M02_ACLK] \
@@ -710,16 +749,22 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   [get_bd_pins axi_spi/s_axi_aclk] \
   [get_bd_pins axi_gp0_interconnect/M05_ACLK] \
   [get_bd_pins axi_tdd_0/s_axi_aclk] \
+  [get_bd_pins axi_gp0_interconnect/M06_ACLK] \
   [get_bd_pins sys_ps7/S_AXI_HP1_ACLK] \
   [get_bd_pins sys_ps7/S_AXI_HP2_ACLK] \
   [get_bd_pins axi_ad9361_dac_dma/m_src_axi_aclk] \
   [get_bd_pins axi_ad9361_adc_dma/m_dest_axi_aclk] \
-  [get_bd_pins sys_ps7/S_AXI_HP3_ACLK]
+  [get_bd_pins hier_video/ACLK] \
+  [get_bd_pins axi_gp0_interconnect/M07_ACLK] \
+  [get_bd_pins sys_ps7/S_AXI_HP3_ACLK] \
+  [get_bd_pins app_logic_0/clk]
+  connect_bd_net -net sys_cpu_reset  [get_bd_pins sys_rstgen/peripheral_reset]
   connect_bd_net -net sys_cpu_resetn  [get_bd_pins sys_rstgen/peripheral_aresetn] \
   [get_bd_pins axi_gp0_interconnect/ARESETN] \
   [get_bd_pins axi_gp0_interconnect/S00_ARESETN] \
   [get_bd_pins axi_gp0_interconnect/M00_ARESETN] \
   [get_bd_pins axi_iic_exp/s_axi_aresetn] \
+  [get_bd_pins hier_microblaze_0/aresetn] \
   [get_bd_pins axi_gp0_interconnect/M01_ARESETN] \
   [get_bd_pins axi_ad9361/s_axi_aresetn] \
   [get_bd_pins axi_gp0_interconnect/M02_ARESETN] \
@@ -730,8 +775,12 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   [get_bd_pins axi_spi/s_axi_aresetn] \
   [get_bd_pins axi_gp0_interconnect/M05_ARESETN] \
   [get_bd_pins axi_tdd_0/s_axi_aresetn] \
+  [get_bd_pins axi_gp0_interconnect/M06_ARESETN] \
   [get_bd_pins axi_ad9361_adc_dma/m_dest_axi_aresetn] \
-  [get_bd_pins axi_ad9361_dac_dma/m_src_axi_aresetn]
+  [get_bd_pins axi_ad9361_dac_dma/m_src_axi_aresetn] \
+  [get_bd_pins axi_gp0_interconnect/M07_ARESETN] \
+  [get_bd_pins hier_video/ARESETN] \
+  [get_bd_pins app_logic_0/rstn]
   connect_bd_net -net sys_ps7_FCLK_RESET0_N  [get_bd_pins sys_ps7/FCLK_RESET0_N] \
   [get_bd_pins sys_rstgen/ext_reset_in]
   connect_bd_net -net sys_ps7_GPIO_O  [get_bd_pins sys_ps7/GPIO_O] \
@@ -748,6 +797,10 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   [get_bd_ports spi0_csn_2_o]
   connect_bd_net -net sys_ps7_SPI0_SS_O  [get_bd_pins sys_ps7/SPI0_SS_O] \
   [get_bd_ports spi0_csn_0_o]
+  connect_bd_net -net sys_rstgen_bus_struct_reset  [get_bd_pins sys_rstgen/bus_struct_reset] \
+  [get_bd_pins hier_microblaze_0/SYS_Rst]
+  connect_bd_net -net sys_rstgen_mb_reset  [get_bd_pins sys_rstgen/mb_reset] \
+  [get_bd_pins hier_microblaze_0/Reset]
   connect_bd_net -net tx_fir_interpolator_data_out_0  [get_bd_pins tx_fir_interpolator/data_out_0] \
   [get_bd_pins axi_ad9361/dac_data_i0]
   connect_bd_net -net tx_fir_interpolator_data_out_1  [get_bd_pins tx_fir_interpolator/data_out_1] \
@@ -772,14 +825,23 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   [get_bd_pins axi_ad9361/up_enable]
   connect_bd_net -net up_txnrx_1  [get_bd_ports up_txnrx] \
   [get_bd_pins axi_ad9361/up_txnrx]
+  connect_bd_net -net xlconcat_0_dout  [get_bd_pins xlconcat_0/dout] \
+  [get_bd_pins app_logic_0/board_clocks]
 
   # Create address segments
+  assign_bd_address -offset 0x40000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs app_logic_0/s_axil/reg0] -force
   assign_bd_address -offset 0x79020000 -range 0x00010000 -with_name SEG_data_axi_ad9361 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs axi_ad9361/s_axi/axi_lite] -force
   assign_bd_address -offset 0x7C400000 -range 0x00001000 -with_name SEG_data_axi_ad9361_adc_dma -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs axi_ad9361_adc_dma/s_axi/axi_lite] -force
   assign_bd_address -offset 0x7C420000 -range 0x00001000 -with_name SEG_data_axi_ad9361_dac_dma -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs axi_ad9361_dac_dma/s_axi/axi_lite] -force
   assign_bd_address -offset 0x41600000 -range 0x00001000 -with_name SEG_data_axi_iic_exp -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs axi_iic_exp/S_AXI/Reg] -force
   assign_bd_address -offset 0x7C430000 -range 0x00001000 -with_name SEG_data_axi_spi -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs axi_spi/AXI_LITE/Reg] -force
   assign_bd_address -offset 0x7C440000 -range 0x00001000 -with_name SEG_data_axi_tdd_0 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs axi_tdd_0/tdd_core/s_axi/axi_lite] -force
+  assign_bd_address -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs hier_video/hls_ip_reset/S_AXI/Reg] -force
+  assign_bd_address -offset 0x43C10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs hier_video/v_frmbuf_rd_0/s_axi_CTRL/Reg] -force
+  assign_bd_address -offset 0x43C00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces sys_ps7/Data] [get_bd_addr_segs hier_video/v_tc_0/ctrl/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x40000000 -target_address_space [get_bd_addr_spaces axi_ad9361_dac_dma/m_src_axi] [get_bd_addr_segs sys_ps7/S_AXI_HP2/HP2_DDR_LOWOCM] -force
   assign_bd_address -offset 0x00000000 -range 0x40000000 -target_address_space [get_bd_addr_spaces axi_ad9361_adc_dma/m_dest_axi] [get_bd_addr_segs sys_ps7/S_AXI_HP1/HP1_DDR_LOWOCM] -force
+  assign_bd_address -offset 0x00000000 -range 0x00004000 -target_address_space [get_bd_addr_spaces hier_microblaze_0/microblaze_riscv_0/Data] [get_bd_addr_segs hier_microblaze_0/microblaze_riscv_0_local_memory/dlmb_bram_if_cntlr/SLMB/Mem] -force
+  assign_bd_address -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces hier_microblaze_0/microblaze_riscv_0/Data] [get_bd_addr_segs hier_microblaze_0/microblaze_riscv_0_axi_intc/S_AXI/Reg] -force
+  assign_bd_address -offset 0x00000000 -range 0x00004000 -target_address_space [get_bd_addr_spaces hier_microblaze_0/microblaze_riscv_0/Instruction] [get_bd_addr_segs hier_microblaze_0/microblaze_riscv_0_local_memory/ilmb_bram_if_cntlr/SLMB/Mem] -force
 # end of Vivado-generated code
