@@ -23,41 +23,8 @@ source $ad_hdl_dir/library/axi_tdd/scripts/axi_tdd.tcl
 source bd_cell_hier_microblaze.tcl
 
 
-# Procedure to create entire design; Provide argument to make
-# procedure reusable. If parentCell is "", will use root.
-proc create_root_design { parentCell } {
-
-  # meh
-  upvar libre libre
-  upvar ad_hdl_dir ad_hdl_dir
-
-  variable script_folder
-  variable design_name
-
-  if { $parentCell eq "" } {
-     set parentCell [get_bd_cells /]
-  }
-
-  # Get object for parentCell
-  set parentObj [get_bd_cells $parentCell]
-  if { $parentObj == "" } {
-     catch {common::send_gid_msg -ssname BD::TCL -id 2090 -severity "ERROR" "Unable to find parent cell <$parentCell>!"}
-     return
-  }
-
-  # Make sure parentObj is hier blk
-  set parentType [get_property TYPE $parentObj]
-  if { $parentType ne "hier" } {
-     catch {common::send_gid_msg -ssname BD::TCL -id 2091 -severity "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
-     return
-  }
-
-  # Save current instance; Restore later
-  set oldCurInst [current_bd_instance .]
-
-  # Set parent object as current
-  current_bd_instance $parentObj
-
+# Start of Vivado-generated code (with some customizations where ADI's code is called).
+# The indentation from `write_bd_tcl` is kept for easier comparison (diff).
 
   # Create interface ports
   set ddr [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 ddr ]
@@ -854,20 +821,4 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   assign_bd_address -offset 0x00000000 -range 0x00004000 -target_address_space [get_bd_addr_spaces hier_microblaze_0/microblaze_riscv_0/Data] [get_bd_addr_segs hier_microblaze_0/microblaze_riscv_0_local_memory/dlmb_bram_if_cntlr/SLMB/Mem] -force
   assign_bd_address -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces hier_microblaze_0/microblaze_riscv_0/Data] [get_bd_addr_segs hier_microblaze_0/microblaze_riscv_0_axi_intc/S_AXI/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x00004000 -target_address_space [get_bd_addr_spaces hier_microblaze_0/microblaze_riscv_0/Instruction] [get_bd_addr_segs hier_microblaze_0/microblaze_riscv_0_local_memory/ilmb_bram_if_cntlr/SLMB/Mem] -force
-
-
-  # Restore current instance
-  current_bd_instance $oldCurInst
-
-  validate_bd_design
-  save_bd_design
-}
-# End of create_root_design()
-
-
-##################################################################
-# MAIN FLOW
-##################################################################
-
-create_root_design ""
 
