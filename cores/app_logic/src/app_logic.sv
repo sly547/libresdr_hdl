@@ -67,20 +67,19 @@ module app_logic
     // to noise along the way. This might cause trouble once I feed video data
     // back into the AD9361. Then again, there are FIFOs..
     // Better: use an MMCM with some phase alignment method?
-    //BUFR #(
-    //    .BUFR_DIVIDE("4"),
-    //    .SIM_DEVICE("7SERIES")
-    //) i_bufr (
-    //    .CE(1'b1),
-    //    .CLR(1'b0),
-    //    .I(board_clocks[2]),
-    //    .O(video_clk_bufr)
-    //);
-    //BUFG i_bufg (
-    //    .O(video_clk),
-    //    .I(video_clk_bufr)
-    //);
-    assign video_clk = 1'b0;
+    BUFR #(
+        .BUFR_DIVIDE("4"),
+        .SIM_DEVICE("7SERIES")
+    ) i_bufr (
+        .CE(1'b1),
+        .CLR(1'b0),
+        .I(board_clocks[2]),
+        .O(video_clk_bufr)
+    );
+    BUFG i_bufg (
+        .O(video_clk),
+        .I(video_clk_bufr)
+    );
 
     // 2.4.4 The dot-star inferred named port connection shortcut
     app_logic_reg i_reg (.*);
