@@ -1,3 +1,8 @@
+// Copyright (c) 2026 Michael Büchler
+// All Rights Reserved.
+//
+// TODO: figure out how to license this. CERN-OHL-W-2.0 seems a bit
+// complicated with the requirement to document changes.
 module app_logic
 #(
     parameter CLOCK_FREQ = 100e6,
