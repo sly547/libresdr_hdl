@@ -27,3 +27,7 @@ There is a Makefile in projects/libre/.
 
 - missing .gitignore
 - missing separation of Vivado project files and the source code and scripts
+
+## TODO
+
+- Remove `axi_iic_exp` from the PL design. Use a PS-internal I2C controller (`CONFIG.PCW_I2C0_PERIPHERAL_ENABLE`) through EMIO for the PL-attached "exp_iic" interface and use this for the AT24C02D. It could store a custom MAC address, for example.
