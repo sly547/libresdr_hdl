@@ -844,4 +844,5 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   assign_bd_address -offset 0x00000000 -range 0x00004000 -target_address_space [get_bd_addr_spaces hier_microblaze_0/microblaze_riscv_0/Data] [get_bd_addr_segs hier_microblaze_0/microblaze_riscv_0_local_memory/dlmb_bram_if_cntlr/SLMB/Mem] -force
   assign_bd_address -offset 0x41200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces hier_microblaze_0/microblaze_riscv_0/Data] [get_bd_addr_segs hier_microblaze_0/microblaze_riscv_0_axi_intc/S_AXI/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x00004000 -target_address_space [get_bd_addr_spaces hier_microblaze_0/microblaze_riscv_0/Instruction] [get_bd_addr_segs hier_microblaze_0/microblaze_riscv_0_local_memory/ilmb_bram_if_cntlr/SLMB/Mem] -force
+  assign_bd_address -offset 0x00000000 -range 0x40000000 -target_address_space [get_bd_addr_spaces hier_video/v_frmbuf_rd_0/Data_m_axi_mm_video] [get_bd_addr_segs sys_ps7/S_AXI_HP3/HP3_DDR_LOWOCM] -force
 # end of Vivado-generated code
