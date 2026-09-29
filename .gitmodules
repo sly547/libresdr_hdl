@@ -4,3 +4,6 @@
 [submodule "desy_vhdl"]
 	path = desy_vhdl
 	url = https://gitlab.desy.de/fpgafw/lib/desy_vhdl.git
+[submodule "cores/my_cvbs_encoder"]
+	path = cores/my_cvbs_encoder
+	url = https://github.com/sly547/my_cvbs_encoder.git
