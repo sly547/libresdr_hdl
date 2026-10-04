@@ -532,6 +532,18 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   set_property CONFIG.NUM_PORTS {16} $sys_concat_intc
 
 
+  # Create instance: ila_0, and set properties
+  set ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ila:6.* ila_0 ]
+  set_property -dict [list \
+    CONFIG.C_MONITOR_TYPE {Native} \
+    CONFIG.C_NUM_OF_PROBES {6} \
+    CONFIG.C_PROBE2_TYPE {1} \
+    CONFIG.C_PROBE2_WIDTH {16} \
+    CONFIG.C_PROBE5_TYPE {1} \
+    CONFIG.C_PROBE5_WIDTH {16} \
+  ] $ila_0
+
+
   # Create interface connections
   connect_bd_intf_net -intf_net S00_AXI_1 [get_bd_intf_pins axi_gp0_interconnect/S00_AXI] [get_bd_intf_pins sys_ps7/M_AXI_GP0]
   connect_bd_intf_net -intf_net axi_ad9361_adc_dma_m_dest_axi [get_bd_intf_pins axi_ad9361_adc_dma/m_dest_axi] [get_bd_intf_pins sys_ps7/S_AXI_HP1]
@@ -625,7 +637,9 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   [get_bd_pins axi_ad9361_adc_dma/fifo_wr_clk] \
   [get_bd_pins axi_ad9361_dac_dma/m_axis_aclk] \
   [get_bd_pins axi_tdd_0/clk] \
-  [get_bd_pins xlconcat_0/In2]
+  [get_bd_pins xlconcat_0/In2] \
+  [get_bd_pins ila_0/clk] \
+  [get_bd_pins hier_video/clk_out]
   connect_bd_net -net axi_ad9361_rst  [get_bd_pins axi_ad9361/rst] \
   [get_bd_pins cpack/reset] \
   [get_bd_pins tx_upack/reset] \
@@ -684,6 +698,10 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   [get_bd_pins axi_ad9361/adc_dovf]
   connect_bd_net -net gpio_i_1  [get_bd_ports gpio_i] \
   [get_bd_pins sys_ps7/GPIO_I]
+  connect_bd_net -net hier_video_data_out_i  [get_bd_pins hier_video/data_out_i] \
+  [get_bd_pins axi_ad9361/dac_data_i1]
+  connect_bd_net -net hier_video_data_out_q  [get_bd_pins hier_video/data_out_q] \
+  [get_bd_pins axi_ad9361/dac_data_q1]
   connect_bd_net -net hier_video_interrupt  [get_bd_pins hier_video/dma_irq] \
   [get_bd_pins sys_concat_intc/In5]
   connect_bd_net -net hier_video_irq  [get_bd_pins hier_video/vtc_irq] \
@@ -802,23 +820,26 @@ ad_tdd_gen_create axi_tdd_0 $TDD_CHANNEL_CNT \
   connect_bd_net -net sys_rstgen_mb_reset  [get_bd_pins sys_rstgen/mb_reset] \
   [get_bd_pins hier_microblaze_0/Reset]
   connect_bd_net -net tx_fir_interpolator_data_out_0  [get_bd_pins tx_fir_interpolator/data_out_0] \
-  [get_bd_pins axi_ad9361/dac_data_i0]
+  [get_bd_pins axi_ad9361/dac_data_i0] \
+  [get_bd_pins ila_0/probe2]
   connect_bd_net -net tx_fir_interpolator_data_out_1  [get_bd_pins tx_fir_interpolator/data_out_1] \
-  [get_bd_pins axi_ad9361/dac_data_q0]
+  [get_bd_pins axi_ad9361/dac_data_q0] \
+  [get_bd_pins ila_0/probe5]
   connect_bd_net -net tx_fir_interpolator_enable_out_0  [get_bd_pins tx_fir_interpolator/enable_out_0] \
-  [get_bd_pins tx_upack/enable_0]
+  [get_bd_pins tx_upack/enable_0] \
+  [get_bd_pins ila_0/probe1]
   connect_bd_net -net tx_fir_interpolator_enable_out_1  [get_bd_pins tx_fir_interpolator/enable_out_1] \
-  [get_bd_pins tx_upack/enable_1]
+  [get_bd_pins tx_upack/enable_1] \
+  [get_bd_pins ila_0/probe4]
   connect_bd_net -net tx_fir_interpolator_valid_out_0  [get_bd_pins tx_fir_interpolator/valid_out_0] \
-  [get_bd_pins logic_or/Op1]
+  [get_bd_pins logic_or/Op1] \
+  [get_bd_pins ila_0/probe0]
+  connect_bd_net -net tx_fir_interpolator_valid_out_1  [get_bd_pins tx_fir_interpolator/valid_out_1] \
+  [get_bd_pins ila_0/probe3]
   connect_bd_net -net tx_upack_fifo_rd_data_0  [get_bd_pins tx_upack/fifo_rd_data_0] \
   [get_bd_pins tx_fir_interpolator/data_in_0]
   connect_bd_net -net tx_upack_fifo_rd_data_1  [get_bd_pins tx_upack/fifo_rd_data_1] \
   [get_bd_pins tx_fir_interpolator/data_in_1]
-  connect_bd_net -net tx_upack_fifo_rd_data_2  [get_bd_pins tx_upack/fifo_rd_data_2] \
-  [get_bd_pins axi_ad9361/dac_data_i1]
-  connect_bd_net -net tx_upack_fifo_rd_data_3  [get_bd_pins tx_upack/fifo_rd_data_3] \
-  [get_bd_pins axi_ad9361/dac_data_q1]
   connect_bd_net -net tx_upack_fifo_rd_underflow  [get_bd_pins tx_upack/fifo_rd_underflow] \
   [get_bd_pins axi_ad9361/dac_dunf]
   connect_bd_net -net up_enable_1  [get_bd_ports up_enable] \

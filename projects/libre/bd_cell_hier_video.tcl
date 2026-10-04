@@ -46,12 +46,15 @@ proc create_hier_cell_hier_video { parentCell nameHier } {
   create_bd_pin -dir I -type rst ARESETN
   create_bd_pin -dir I -type rst ext_reset_in
   create_bd_pin -dir I -type clk video_clk
+  create_bd_pin -dir I clk_out
+  create_bd_pin -dir O -from 15 -to 0 data_out_i
+  create_bd_pin -dir O -from 15 -to 0 data_out_q
 
   # Create instance: ila_0, and set properties
   set ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ila:6.* ila_0 ]
   set_property -dict [list \
     CONFIG.C_MONITOR_TYPE {Native} \
-    CONFIG.C_NUM_OF_PROBES {9} \
+    CONFIG.C_NUM_OF_PROBES {6} \
     CONFIG.C_PROBE10_WIDTH {1} \
     CONFIG.C_PROBE12_WIDTH {1} \
     CONFIG.C_PROBE1_TYPE {1} \
@@ -121,6 +124,23 @@ proc create_hier_cell_hier_video { parentCell nameHier } {
   # Create instance: my_cvbs_encoder_0, and set properties
   set my_cvbs_encoder_0 [ create_bd_cell -type ip -vlnv user.org:user:my_cvbs_encoder:1.* my_cvbs_encoder_0 ]
 
+  # Create instance: cvbs_to_sdr_0, and set properties
+  set cvbs_to_sdr_0 [ create_bd_cell -type ip -vlnv user.org:user:cvbs_to_sdr:1.* cvbs_to_sdr_0 ]
+
+  # Create instance: ilconstant_0, and set properties
+  set ilconstant_0 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconstant:1.* ilconstant_0 ]
+
+  # Create instance: ila_1, and set properties
+  set ila_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ila:6.* ila_1 ]
+  set_property -dict [list \
+    CONFIG.C_DATA_DEPTH {4096} \
+    CONFIG.C_MONITOR_TYPE {Native} \
+    CONFIG.C_NUM_OF_PROBES {2} \
+    CONFIG.C_PROBE1_TYPE {1} \
+    CONFIG.C_PROBE1_WIDTH {16} \
+  ] $ila_1
+
+
   # Create interface connections
   connect_bd_intf_net -intf_net Conn1 [get_bd_intf_pins axi_interconnect_0/S00_AXI] [get_bd_intf_pins S00_AXI]
   connect_bd_intf_net -intf_net Conn2 [get_bd_intf_pins axi_protocol_convert_0/M_AXI] [get_bd_intf_pins M_AXI]
@@ -139,6 +159,9 @@ proc create_hier_cell_hier_video { parentCell nameHier } {
   [get_bd_pins axi_interconnect_0/ACLK] \
   [get_bd_pins axi_clock_converter_0/m_axi_aclk] \
   [get_bd_pins axi_protocol_convert_0/aclk]
+  connect_bd_net -net clk_out_1  [get_bd_pins clk_out] \
+  [get_bd_pins ila_1/clk] \
+  [get_bd_pins cvbs_to_sdr_0/clk_out]
   connect_bd_net -net clk_wiz_0_clk_out1  [get_bd_pins video_clk] \
   [get_bd_pins axi_interconnect_0/M00_ACLK] \
   [get_bd_pins axi_interconnect_0/M01_ACLK] \
@@ -148,7 +171,15 @@ proc create_hier_cell_hier_video { parentCell nameHier } {
   [get_bd_pins hls_ip_reset/s_axi_aclk] \
   [get_bd_pins v_frmbuf_rd_0/ap_clk] \
   [get_bd_pins axi_clock_converter_0/s_axi_aclk] \
-  [get_bd_pins my_cvbs_encoder_0/aclk]
+  [get_bd_pins my_cvbs_encoder_0/aclk] \
+  [get_bd_pins cvbs_to_sdr_0/clk_in]
+  connect_bd_net -net cvbs_to_sdr_0_data_out_i  [get_bd_pins cvbs_to_sdr_0/data_out_i] \
+  [get_bd_pins ila_1/probe1] \
+  [get_bd_pins data_out_i]
+  connect_bd_net -net cvbs_to_sdr_0_data_out_q  [get_bd_pins cvbs_to_sdr_0/data_out_q] \
+  [get_bd_pins data_out_q]
+  connect_bd_net -net cvbs_to_sdr_0_data_valid  [get_bd_pins cvbs_to_sdr_0/data_valid] \
+  [get_bd_pins ila_1/probe0]
   connect_bd_net -net ext_reset_in_1  [get_bd_pins ARESETN] \
   [get_bd_pins axi_interconnect_0/S00_ARESETN] \
   [get_bd_pins axi_interconnect_0/ARESETN] \
@@ -160,19 +191,23 @@ proc create_hier_cell_hier_video { parentCell nameHier } {
   [get_bd_pins v_frmbuf_rd_0/ap_rst_n]
   connect_bd_net -net hls_ip_reset_gpio_io_o1  [get_bd_pins hls_ip_reset/gpio_io_o] \
   [get_bd_pins ilslice_0/Din]
+  connect_bd_net -net ilconstant_0_dout  [get_bd_pins ilconstant_0/dout] \
+  [get_bd_pins cvbs_to_sdr_0/rst_out_n]
   connect_bd_net -net my_cvbs_encoder_0_po_cvbs  [get_bd_pins my_cvbs_encoder_0/po_cvbs] \
-  [get_bd_pins ila_0/probe1]
+  [get_bd_pins ila_0/probe1] \
+  [get_bd_pins cvbs_to_sdr_0/cvbs]
   connect_bd_net -net my_cvbs_encoder_0_po_hblank  [get_bd_pins my_cvbs_encoder_0/po_hblank] \
-  [get_bd_pins ila_0/probe5]
+  [get_bd_pins ila_0/probe5] \
+  [get_bd_pins cvbs_to_sdr_0/hblank]
   connect_bd_net -net my_cvbs_encoder_0_po_hsync  [get_bd_pins my_cvbs_encoder_0/po_hsync] \
-  [get_bd_pins ila_0/probe4]
+  [get_bd_pins ila_0/probe4] \
+  [get_bd_pins cvbs_to_sdr_0/hsync]
   connect_bd_net -net my_cvbs_encoder_0_po_vblank  [get_bd_pins my_cvbs_encoder_0/po_vblank] \
-  [get_bd_pins ila_0/probe3]
+  [get_bd_pins ila_0/probe3] \
+  [get_bd_pins cvbs_to_sdr_0/vblank]
   connect_bd_net -net my_cvbs_encoder_0_po_vsync  [get_bd_pins my_cvbs_encoder_0/po_vsync] \
-  [get_bd_pins ila_0/probe2]
-  connect_bd_net -net my_cvbs_encoder_0_s_axis_tready  [get_bd_pins my_cvbs_encoder_0/s_axis_tready] \
-  [get_bd_pins v_frmbuf_rd_0/m_axis_video_TREADY] \
-  [get_bd_pins ila_0/probe8]
+  [get_bd_pins ila_0/probe2] \
+  [get_bd_pins cvbs_to_sdr_0/vsync]
   connect_bd_net -net proc_sys_reset_0_interconnect_aresetn  [get_bd_pins proc_sys_reset_0/interconnect_aresetn] \
   [get_bd_pins axi_interconnect_0/M00_ARESETN] \
   [get_bd_pins axi_interconnect_0/M01_ARESETN] \
@@ -183,16 +218,6 @@ proc create_hier_cell_hier_video { parentCell nameHier } {
   [get_bd_pins ila_0/probe0]
   connect_bd_net -net v_frmbuf_rd_0_interrupt  [get_bd_pins v_frmbuf_rd_0/interrupt] \
   [get_bd_pins dma_irq]
-  connect_bd_net -net v_frmbuf_rd_0_m_axis_video_TDATA  [get_bd_pins v_frmbuf_rd_0/m_axis_video_TDATA] \
-  [get_bd_pins my_cvbs_encoder_0/s_axis_tdata]
-  connect_bd_net -net v_frmbuf_rd_0_m_axis_video_TLAST  [get_bd_pins v_frmbuf_rd_0/m_axis_video_TLAST] \
-  [get_bd_pins my_cvbs_encoder_0/s_axis_tlast]
-  connect_bd_net -net v_frmbuf_rd_0_m_axis_video_TUSER  [get_bd_pins v_frmbuf_rd_0/m_axis_video_TUSER] \
-  [get_bd_pins ila_0/probe6] \
-  [get_bd_pins my_cvbs_encoder_0/s_axis_tuser]
-  connect_bd_net -net v_frmbuf_rd_0_m_axis_video_TVALID  [get_bd_pins v_frmbuf_rd_0/m_axis_video_TVALID] \
-  [get_bd_pins ila_0/probe7] \
-  [get_bd_pins my_cvbs_encoder_0/s_axis_tvalid]
 
   # Restore current instance
   current_bd_instance $oldCurInst
