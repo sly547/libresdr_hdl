@@ -7,3 +7,6 @@
 [submodule "cores/my_cvbs_encoder"]
 	path = cores/my_cvbs_encoder
 	url = https://github.com/sly547/my_cvbs_encoder.git
+[submodule "cores/cvbs_to_sdr"]
+	path = cores/cvbs_to_sdr
+	url = https://github.com/sly547/cvbs_to_sdr.git
