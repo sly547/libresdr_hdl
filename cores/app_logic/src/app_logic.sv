@@ -13,6 +13,7 @@ module app_logic
     input logic [N_CLOCKS-1:0] board_clocks,
     output logic video_clk,
     output logic video_rstn,
+    output logic video_sel,
 
     output logic s_axil_awready,
     input wire s_axil_awvalid,
@@ -63,6 +64,7 @@ module app_logic
     assign hwif_in.clock_freq[3].data.next = freqs[3];
 
     assign video_rstn = !hwif_out.video.rst.value;
+    assign video_sel = !hwif_out.video.sel.value;
 
     // freqs[2] is the AD9361 BB PLL clock - divide it by 4 to get the actual
     // sample rate.

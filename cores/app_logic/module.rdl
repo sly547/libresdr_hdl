@@ -15,5 +15,11 @@ addrmap app_logic_reg {
       sw=rw;
       hw=r;
     } rst[1];
+    field {
+      name = "Select video data at DAC channel 1 input";
+      sw = rw;
+      hw = r;
+      swmod;
+    } sel[1];
   } video;
 };
