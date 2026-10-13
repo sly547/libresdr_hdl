@@ -1,6 +1,6 @@
 ## what's this
 
-It seemed like a good idea to collect the programmable logic stuff for the LibreSDR in its own repo. It is part of my personal repo for this device, to serve as a platform for experimentation and implementing ideas.
+It seemed like a good idea to collect the programmable logic stuff for the LibreSDR in its own repo. It is part of my personal build flow for this device, to serve as a platform for experimentation and implementing ideas.
 
 ## Folder structure
 
@@ -27,7 +27,8 @@ There is a Makefile in projects/libre/.
 
 - missing .gitignore
 - missing separation of Vivado project files and the source code and scripts
+    - this issue was inherited from adi-hdl
 
 ## TODO
 
-- Remove `axi_iic_exp` from the PL design. Use a PS-internal I2C controller (`CONFIG.PCW_I2C0_PERIPHERAL_ENABLE`) through EMIO for the PL-attached "exp_iic" interface and use this for the AT24C02D. It could store a custom MAC address, for example.
+- Remove `axi_iic_exp` from the PL design. Use a PS-internal I2C controller (`CONFIG.PCW_I2C0_PERIPHERAL_ENABLE`) through EMIO for the PL-attached "exp_iic" interface and use this for the AT24C02D. It could store a custom MAC address, for example. The FSBL must load a bitstream that routes the EMIO pins through the PL to the external pins with the I2C interface.
